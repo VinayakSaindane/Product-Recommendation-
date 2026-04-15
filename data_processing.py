@@ -42,6 +42,15 @@ def extract_primary_category(product_category_tree):
     except (ValueError, SyntaxError, IndexError):
         return None
 
+def extract_category_path(product_category_tree):
+    """
+    Extract a readable full category path from the source category tree.
+    """
+    try:
+        return literal_eval(product_category_tree)[0].replace('>>', ' > ').strip()
+    except (ValueError, SyntaxError, IndexError, TypeError):
+        return None
+
 def extract_primary_image(image_str):
     """
     Extract the primary image URL from the image string.
@@ -92,10 +101,11 @@ def preprocess_data(df):
         pd.DataFrame: Preprocessed dataset DataFrame.
     """
     df['primary_category'] = df['product_category_tree'].apply(extract_primary_category)
+    df['category_path'] = df['product_category_tree'].apply(extract_category_path)
     df['primary_image_link'] = df['image'].apply(extract_primary_image)
     df['gender'] = df.apply(lambda x: determine_gender(x['product_name'], x['description']), axis=1)
 
-    columns_of_interest = ['pid', 'product_url', 'product_name', 'primary_category',
+    columns_of_interest = ['pid', 'product_url', 'product_name', 'primary_category', 'category_path',
                            'retail_price', 'discounted_price', 'primary_image_link',
                            'description', 'brand', 'gender']
     refined_df = df[columns_of_interest]
